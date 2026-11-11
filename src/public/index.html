@@ -681,23 +681,8 @@
     .input-actions-right {
       display: flex;
       align-items: center;
-      gap: 0.45rem;
       flex-shrink: 0;
       margin-bottom: 2px;
-    }
-
-    .badge-tool-indicator {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-secondary);
-      font-size: 0.78rem;
-      font-weight: 500;
-      padding: 0.25rem 0.6rem;
-      border-radius: 9999px;
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      cursor: default;
     }
 
     /* Round Upward Arrow Send Button */
@@ -917,12 +902,6 @@
           <div class="user-role-text">Candidate / Evaluator</div>
         </div>
       </div>
-      <button class="icon-btn-ghost" onclick="startNewChat()" title="Start Fresh Chat" aria-label="New chat">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      </button>
     </div>
   </aside>
 
@@ -970,14 +949,6 @@
           <textarea id="prompt-input" rows="1" placeholder="Ask anything, compare pricing, or query past days..." autocomplete="off"></textarea>
 
           <div class="input-actions-right">
-            <div class="badge-tool-indicator" title="Autonomous 1-tool search active">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-              <span>Search</span>
-            </div>
-
             <!-- Round upward arrow send button -->
             <button id="btn-send" type="button" onclick="submitPrompt()" aria-label="Send prompt">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
