@@ -1,4 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
 import type { ContentItem, LLMClientInterface, LLMResponse, FunctionCallItem } from "./types.js";
 
 export const WEB_SEARCH_TOOL_DECLARATION = {
@@ -21,7 +20,6 @@ export const WEB_SEARCH_TOOL_DECLARATION = {
 };
 
 export class GeminiClient implements LLMClientInterface {
-  private ai?: GoogleGenAI;
   private apiKey: string;
   private model: string;
   private maxRetries: number;
@@ -30,24 +28,36 @@ export class GeminiClient implements LLMClientInterface {
     this.apiKey = apiKey?.trim() || "";
     this.model = model?.trim() || "gemini-2.5-flash";
     this.maxRetries = maxRetries;
-
-    if (this.apiKey) {
-      this.ai = new GoogleGenAI({ apiKey: this.apiKey });
-    }
   }
 
   public setApiKey(key: string): void {
     this.apiKey = key.trim();
-    if (this.apiKey) {
-      this.ai = new GoogleGenAI({ apiKey: this.apiKey });
-    }
   }
 
   public async generate(contents: ContentItem[], systemInstruction?: string): Promise<LLMResponse> {
-    if (!this.apiKey || !this.ai) {
+    if (!this.apiKey) {
       throw new Error(
         "GEMINI_API_KEY is not configured. Please add your GEMINI_API_KEY in .env or set it in your environment."
       );
+    }
+
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${encodeURIComponent(
+      this.apiKey
+    )}`;
+
+    const requestBody: Record<string, any> = {
+      contents,
+      tools: [WEB_SEARCH_TOOL_DECLARATION],
+      generationConfig: {
+        temperature: 0.2,
+      },
+    };
+
+    if (systemInstruction) {
+      requestBody.systemInstruction = {
+        role: "system",
+        parts: [{ text: systemInstruction }],
+      };
     }
 
     let attempt = 0;
@@ -55,51 +65,66 @@ export class GeminiClient implements LLMClientInterface {
 
     while (attempt <= this.maxRetries) {
       try {
-        const response = await this.ai.models.generateContent({
-          model: this.model,
-          contents: contents as any,
-          config: {
-            systemInstruction: systemInstruction || undefined,
-            tools: [WEB_SEARCH_TOOL_DECLARATION as any],
-            temperature: 0.2, // Low temperature for factual precision and reliable tool calling
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
+          body: JSON.stringify(requestBody),
         });
 
-        const text = response.text || undefined;
-        let functionCalls: FunctionCallItem[] | undefined;
+        if (!response.ok) {
+          const errData = (await response.json().catch(() => ({}))) as any;
+          const errMsg = errData.error?.message || `HTTP ${response.status} ${response.statusText}`;
+          const errStatus = response.status;
 
-        if (response.functionCalls && Array.isArray(response.functionCalls) && response.functionCalls.length > 0) {
-          functionCalls = response.functionCalls.map((fc: any) => ({
-            name: fc.name,
-            args: fc.args || {},
-          }));
+          // Retry on 429 (rate limit) or 503 (service overloaded)
+          if ((errStatus === 429 || errStatus === 503) && attempt < this.maxRetries) {
+            attempt++;
+            const backoffMs = attempt * 1500;
+            console.warn(`[GeminiClient] Status ${errStatus}. Retrying in ${backoffMs}ms (attempt ${attempt}/${this.maxRetries})...`);
+            await new Promise((r) => setTimeout(r, backoffMs));
+            continue;
+          }
+
+          throw new Error(`Gemini API Error (${errStatus}): ${errMsg}`);
+        }
+
+        const data = (await response.json()) as any;
+        const candidate = data.candidates?.[0];
+        const parts = candidate?.content?.parts || [];
+
+        let text: string | undefined;
+        const functionCalls: FunctionCallItem[] = [];
+
+        for (const part of parts) {
+          if (part.text) {
+            text = (text ? text + "\n" : "") + part.text;
+          }
+          if (part.functionCall) {
+            functionCalls.push({
+              name: part.functionCall.name,
+              args: part.functionCall.args || {},
+            });
+          }
         }
 
         return {
           text,
-          functionCalls,
+          functionCalls: functionCalls.length > 0 ? functionCalls : undefined,
           usage: {
-            promptTokens: response.usageMetadata?.promptTokenCount,
-            completionTokens: response.usageMetadata?.candidatesTokenCount,
-            totalTokens: response.usageMetadata?.totalTokenCount,
+            promptTokens: data.usageMetadata?.promptTokenCount,
+            completionTokens: data.usageMetadata?.candidatesTokenCount,
+            totalTokens: data.usageMetadata?.totalTokenCount,
           },
         };
-      } catch (err: any) {
+      } catch (err: unknown) {
         lastError = err;
         attempt++;
-
-        // Retry on 429 (rate limit) or 503 (service overloaded)
-        const status = err?.status || err?.code || 0;
-        const msg = String(err?.message || "");
-        const isRateLimitOrOverload = status === 429 || status === 503 || msg.includes("429") || msg.includes("RESOURCE_EXHAUSTED");
-
-        if (isRateLimitOrOverload && attempt <= this.maxRetries) {
-          const backoffMs = attempt * 1500;
-          console.warn(`[GeminiClient] Rate limited / overloaded. Retrying in ${backoffMs}ms (attempt ${attempt}/${this.maxRetries})...`);
-          await new Promise((resolve) => setTimeout(resolve, backoffMs));
+        if (attempt <= this.maxRetries) {
+          await new Promise((r) => setTimeout(r, 1000));
           continue;
         }
-
         break;
       }
     }
