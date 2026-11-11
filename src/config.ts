@@ -15,7 +15,7 @@ export interface AppConfig {
 
 export function loadConfig(env: Record<string, string | undefined> = process.env): AppConfig {
   const geminiApiKey = env.GEMINI_API_KEY?.trim() || "";
-  const geminiModel = env.GEMINI_MODEL?.trim() || "gemini-2.5-flash";
+  const geminiModel = env.GEMINI_MODEL?.trim() || "gemini-flash-lite-latest";
   const tavilyApiKey = env.TAVILY_API_KEY?.trim() || undefined;
   
   const parsedPort = Number.parseInt(env.PORT || "3000", 10);

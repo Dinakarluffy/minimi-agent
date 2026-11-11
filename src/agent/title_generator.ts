@@ -9,7 +9,7 @@ export async function generateChatTitle(firstPrompt: string, apiKey?: string): P
   }
 
   try {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${encodeURIComponent(
       apiKey.trim()
     )}`;
 

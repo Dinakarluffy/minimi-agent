@@ -5,7 +5,7 @@ describe("loadConfig", () => {
   it("provides safe defaults when env is empty", () => {
     const conf = loadConfig({});
     expect(conf.geminiApiKey).toBe("");
-    expect(conf.geminiModel).toBe("gemini-2.5-flash");
+    expect(conf.geminiModel).toBe("gemini-flash-lite-latest");
     expect(conf.port).toBe(3000);
     expect(conf.dbPath).toBe("data/agent.db");
     expect(conf.tavilyApiKey).toBeUndefined();
