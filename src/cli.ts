@@ -9,12 +9,12 @@ async function main() {
   console.log("\n=======================================================");
   console.log("🤖 minimi Terminal Chat Agent (Interactive Mode)");
   console.log(`• Model: ${config.geminiModel}`);
-  console.log(`• Search: ${config.tavilyApiKey ? "Tavily + DuckDuckGo" : "DuckDuckGo"}`);
+  console.log(`• Search: Zero-Key (DuckDuckGo + Bing)`);
   console.log(`• Type 'exit' or 'quit' to end session.`);
   console.log("=======================================================\n");
 
   const store = new SqliteStore(config.dbPath);
-  const searchService = new SearchService(config.tavilyApiKey);
+  const searchService = new SearchService(config.geminiApiKey);
   const geminiClient = new GeminiClient(config.geminiApiKey, config.geminiModel);
   const agent = new AgentLoop(store, searchService, geminiClient);
 

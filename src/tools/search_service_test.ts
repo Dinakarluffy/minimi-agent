@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SearchService } from "./search_service.js";
-import * as tavilyModule from "./tavily.js";
 import * as ddgModule from "./duckduckgo.js";
+import * as bingModule from "./bing.js";
 
 describe("SearchService", () => {
   let service: SearchService;
@@ -18,7 +18,7 @@ describe("SearchService", () => {
     expect(res.error).toBeDefined();
   });
 
-  it("uses DuckDuckGo when no Tavily API key is set", async () => {
+  it("uses DuckDuckGo as primary search provider", async () => {
     vi.spyOn(ddgModule, "searchDuckDuckGo").mockResolvedValue([
       { title: "Neon DB", url: "https://neon.tech", content: "Serverless Postgres" },
     ]);
@@ -29,16 +29,14 @@ describe("SearchService", () => {
     expect(res.results[0].title).toBe("Neon DB");
   });
 
-  it("attempts Tavily first and falls back to DuckDuckGo on Tavily failure", async () => {
-    service.setTavilyApiKey("invalid-or-failing-key");
-
-    vi.spyOn(tavilyModule, "searchTavily").mockRejectedValue(new Error("Rate limit 429"));
-    vi.spyOn(ddgModule, "searchDuckDuckGo").mockResolvedValue([
+  it("falls back to Bing when DuckDuckGo fails", async () => {
+    vi.spyOn(ddgModule, "searchDuckDuckGo").mockRejectedValue(new Error("Rate limit 202"));
+    vi.spyOn(bingModule, "searchBing").mockResolvedValue([
       { title: "Supabase Pricing", url: "https://supabase.com", content: "Pro tier $25" },
     ]);
 
     const res = await service.search("Supabase pricing");
-    expect(res.provider).toBe("duckduckgo");
+    expect(res.provider).toBe("bing");
     expect(res.results).toHaveLength(1);
     expect(res.results[0].title).toBe("Supabase Pricing");
   });

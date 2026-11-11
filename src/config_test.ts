@@ -8,20 +8,17 @@ describe("loadConfig", () => {
     expect(conf.geminiModel).toBe("gemini-flash-lite-latest");
     expect(conf.port).toBe(3000);
     expect(conf.dbPath).toBe("data/agent.db");
-    expect(conf.tavilyApiKey).toBeUndefined();
   });
 
   it("parses valid env variables", () => {
     const conf = loadConfig({
       GEMINI_API_KEY: "test-key-123",
       GEMINI_MODEL: "gemini-1.5-pro",
-      TAVILY_API_KEY: "tvly-key-456",
       PORT: "8080",
       DB_PATH: ":memory:",
     });
     expect(conf.geminiApiKey).toBe("test-key-123");
     expect(conf.geminiModel).toBe("gemini-1.5-pro");
-    expect(conf.tavilyApiKey).toBe("tvly-key-456");
     expect(conf.port).toBe(8080);
     expect(conf.dbPath).toBe(":memory:");
   });

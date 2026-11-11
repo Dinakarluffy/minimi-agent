@@ -1,7 +1,6 @@
 import { sanitizeSearchQuery } from "./query_sanitizer.js";
-import { searchTavily } from "./tavily.js";
-import { searchBing } from "./bing.js";
 import { searchDuckDuckGo } from "./duckduckgo.js";
+import { searchBing } from "./bing.js";
 import { searchGoogleGrounding } from "./google_search.js";
 import type { SearchResponse, SearchResultItem, SearchOptions } from "./types.js";
 
@@ -11,13 +10,11 @@ interface CacheEntry {
 }
 
 export class SearchService {
-  private tavilyApiKey?: string;
   private geminiApiKey?: string;
   private cache: Map<string, CacheEntry> = new Map();
   private cacheTtlMs: number;
 
-  constructor(tavilyApiKey?: string, geminiApiKeyOrTtl?: string | number, cacheTtlMs?: number) {
-    this.tavilyApiKey = typeof tavilyApiKey === "string" ? tavilyApiKey.trim() || undefined : undefined;
+  constructor(geminiApiKeyOrTtl?: string | number, cacheTtlMs?: number) {
     if (typeof geminiApiKeyOrTtl === "number") {
       this.cacheTtlMs = geminiApiKeyOrTtl;
       this.geminiApiKey = undefined;
@@ -27,20 +24,15 @@ export class SearchService {
     }
   }
 
-  public setTavilyApiKey(key?: string): void {
-    this.tavilyApiKey = key?.trim() || undefined;
-  }
-
   public setGeminiApiKey(key?: string): void {
     this.geminiApiKey = key?.trim() || undefined;
   }
 
   /**
-   * Resilient search orchestrator with sanitization, caching, and multi-tier fallback:
-   * 1. Tavily API (if configured)
-   * 2. Bing Search (Fast, unmetered, zero API key)
-   * 3. DuckDuckGo (zero API key fallback)
-   * 4. Google Search Grounding fallback
+   * Resilient search orchestrator with sanitization, caching, and zero-key multi-tier fallback:
+   * 1. DuckDuckGo (Fast, direct, developer-accurate, zero-API-key)
+   * 2. Bing Search (Robust, unmetered, zero-API-key fallback)
+   * 3. Google Search Grounding (uses existing GEMINI_API_KEY)
    */
   public async search(rawQuery: string, options: SearchOptions = {}): Promise<SearchResponse> {
     const sanitized = sanitizeSearchQuery(rawQuery);
@@ -66,35 +58,21 @@ export class SearchService {
     }
 
     let results: SearchResultItem[] = [];
-    let provider: "tavily" | "bing" | "duckduckgo" | "google" | "fallback" = "fallback";
+    let provider: "duckduckgo" | "bing" | "google" | "fallback" = "fallback";
     let lastError: string | undefined;
 
-    // 2. Tier 1: Try Tavily if configured
-    if (this.tavilyApiKey) {
-      try {
-        results = await searchTavily(sanitized.sanitized, this.tavilyApiKey, options);
-        if (results.length > 0) {
-          provider = "tavily";
-        }
-      } catch (err: unknown) {
-        lastError = err instanceof Error ? err.message : String(err);
+    // 2. Tier 1: DuckDuckGo (Fast, direct, developer-accurate)
+    try {
+      results = await searchDuckDuckGo(sanitized.sanitized, options);
+      if (results.length > 0) {
+        provider = "duckduckgo";
       }
+    } catch (ddgErr: unknown) {
+      const ddgErrorMsg = ddgErr instanceof Error ? ddgErr.message : String(ddgErr);
+      lastError = ddgErrorMsg;
     }
 
-    // 3. Tier 2: DuckDuckGo (Fast, direct, developer-accurate)
-    if (results.length === 0) {
-      try {
-        results = await searchDuckDuckGo(sanitized.sanitized, options);
-        if (results.length > 0) {
-          provider = "duckduckgo";
-        }
-      } catch (ddgErr: unknown) {
-        const ddgErrorMsg = ddgErr instanceof Error ? ddgErr.message : String(ddgErr);
-        lastError = lastError ? `${lastError} | DuckDuckGo: ${ddgErrorMsg}` : ddgErrorMsg;
-      }
-    }
-
-    // 4. Tier 3: Bing Search (Robust, unmetered fallback)
+    // 3. Tier 2: Bing Search (Robust, unmetered fallback)
     if (results.length === 0) {
       try {
         results = await searchBing(sanitized.sanitized, options);
@@ -107,7 +85,7 @@ export class SearchService {
       }
     }
 
-    // 5. Tier 4: Google Search Grounding fallback
+    // 4. Tier 3: Google Search Grounding fallback
     if (results.length === 0 && this.geminiApiKey) {
       try {
         results = await searchGoogleGrounding(sanitized.sanitized, this.geminiApiKey, options);

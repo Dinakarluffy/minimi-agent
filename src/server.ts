@@ -28,7 +28,7 @@ export function getClientHtml(): string {
 
 // Initialize core services with multi-tier search fallback
 const store = new SqliteStore(config.dbPath);
-const searchService = new SearchService(config.tavilyApiKey, config.geminiApiKey);
+const searchService = new SearchService(config.geminiApiKey);
 const geminiClient = new GeminiClient(config.geminiApiKey, config.geminiModel);
 const agent = new AgentLoop(store, searchService, geminiClient);
 
@@ -147,7 +147,7 @@ if (process.argv[1]?.endsWith("server.ts") || process.argv[1]?.endsWith("server.
     console.log(`\n======================================================`);
     console.log(`🚀 minimi chat agent running at http://localhost:${config.port}`);
     console.log(`• Model: ${config.geminiModel}`);
-    console.log(`• Search: Multi-tier (Tavily -> Google Search Grounding -> DuckDuckGo)`);
+    console.log(`• Search: Multi-tier Zero-Key (DuckDuckGo -> Bing -> Google Search Grounding)`);
     console.log(`• Memory: SQLite WAL (${config.dbPath})`);
     console.log(`======================================================\n`);
   });

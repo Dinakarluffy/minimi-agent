@@ -22,7 +22,7 @@ GEMINI_API_KEY=your_actual_gemini_api_key_here
 ```
 *(Get a free key in 30 seconds at [Google AI Studio](https://aistudio.google.com/app/apikey))*.
 
-> **Note on Web Search:** `TAVILY_API_KEY` is completely optional. If left blank, the agent automatically uses an embedded zero-API-key DuckDuckGo search fallback.
+> **Note on Web Search:** Zero search subscriptions or extra API keys required. The agent automatically uses a resilient zero-key search pipeline (DuckDuckGo $\rightarrow$ Bing $\rightarrow$ Google Grounding).
 
 ### 3. Run the Agent
 To start the web interface:
@@ -79,8 +79,8 @@ The agent includes dedicated integration tests for the challenge dataset prompts
 ## Architectural Highlights
 
 * **Resilient Multi-Tier Search**:
-  - `Tavily API` (primary) $\rightarrow$ `DuckDuckGo HTML Scraper` (fail-safe fallback).
-  - Search never crashes even under 429 rate limits or missing credentials.
+  - `DuckDuckGo` (primary zero-key scraper) $\rightarrow$ `Bing Search` (fail-safe unmetered fallback) $\rightarrow$ `Google Grounding`.
+  - Search never crashes even under rate limits, missing credentials, or anti-bot challenges.
 * **Deterministic Temporal Anchoring**:
   - Automatically resolves relative dates (`"last Tuesday"`, `"since Monday"`, `"3 November"`) to exact ISO date bounds.
 * **Embedded SQLite Persistence**:

@@ -8,7 +8,6 @@ dotenv.config();
 export interface AppConfig {
   geminiApiKey: string;
   geminiModel: string;
-  tavilyApiKey?: string;
   port: number;
   dbPath: string;
 }
@@ -16,7 +15,6 @@ export interface AppConfig {
 export function loadConfig(env: Record<string, string | undefined> = process.env): AppConfig {
   const geminiApiKey = env.GEMINI_API_KEY?.trim() || "";
   const geminiModel = env.GEMINI_MODEL?.trim() || "gemini-flash-lite-latest";
-  const tavilyApiKey = env.TAVILY_API_KEY?.trim() || undefined;
   
   const parsedPort = Number.parseInt(env.PORT || "3000", 10);
   const port = Number.isFinite(parsedPort) && parsedPort > 0 ? parsedPort : 3000;
@@ -36,7 +34,6 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   return {
     geminiApiKey,
     geminiModel,
-    tavilyApiKey,
     port,
     dbPath,
   };
