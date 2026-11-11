@@ -651,9 +651,9 @@ const HTML_CLIENT = `<!DOCTYPE html>
       </div>
 
       <div class="input-box-wrapper">
-        <form id="chat-form">
+        <form id="chat-form" onsubmit="event.preventDefault(); submitPrompt(); return false;">
           <textarea id="prompt-input" rows="1" placeholder="Ask anything, compare pricing, or query past days..." autocomplete="off"></textarea>
-          <button id="btn-send" type="submit" aria-label="Send">
+          <button id="btn-send" type="button" onclick="submitPrompt()" aria-label="Send">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
           </button>
         </form>
@@ -682,7 +682,7 @@ const HTML_CLIENT = `<!DOCTYPE html>
     inputEl.addEventListener("keydown", function(e) {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        document.getElementById("chat-form").dispatchEvent(new Event("submit"));
+        submitPrompt();
       }
     });
 
@@ -837,8 +837,7 @@ const HTML_CLIENT = `<!DOCTYPE html>
       messagesWrapper.scrollTop = messagesWrapper.scrollHeight;
     }
 
-    document.getElementById("chat-form").onsubmit = async (e) => {
-      e.preventDefault();
+    async function submitPrompt() {
       const text = inputEl.value.trim();
       if (!text) return;
 
@@ -854,7 +853,7 @@ const HTML_CLIENT = `<!DOCTYPE html>
       loadingGroup.innerHTML = \`
         <div class="avatar">✦</div>
         <div class="msg-bubble">
-          <div class="msg-time">minimi agent • Searching & Synthesizing...</div>
+          <div class="msg-time">minimi agent • Searching &amp; Synthesizing...</div>
           <div class="typing-indicator">
             <span class="typing-dot"></span>
             <span class="typing-dot"></span>
@@ -871,6 +870,10 @@ const HTML_CLIENT = `<!DOCTYPE html>
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sessionId: currentSessionId, message: text }),
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Server error HTTP " + res.status);
+        }
         const data = await res.json();
         loadingGroup.remove();
 
@@ -887,7 +890,7 @@ const HTML_CLIENT = `<!DOCTYPE html>
         btnSend.disabled = false;
         inputEl.focus();
       }
-    };
+    }
 
     loadSessions();
   </script>
