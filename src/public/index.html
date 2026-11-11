@@ -9,23 +9,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     /* ======================================================== */
-    /* OPENAI CHATGPT DARK THEME COLOR SYSTEM                   */
+    /* DESIGN SYSTEM: MINIMI (ChatGPT-Inspired Dark Aesthetic)  */
     /* ======================================================== */
     :root {
-      --bg-canvas: #212121;
-      --bg-sidebar: #171717;
-      --bg-input: #2f2f2f;
-      --bg-surface-hover: #212121;
-      --bg-card: #2a2a2a;
+      --bg-canvas: #1e1e22;
+      --bg-sidebar: #141416;
+      --bg-capsule: #2a2a2f;
+      --bg-capsule-focus: #323238;
+      --bg-hover: rgba(255, 255, 255, 0.06);
       --border-subtle: rgba(255, 255, 255, 0.08);
-      --border-focus: rgba(255, 255, 255, 0.2);
-      --text-primary: #ececec;
-      --text-secondary: #b4b4b4;
-      --text-muted: #737373;
+      --border-focus: rgba(255, 255, 255, 0.22);
+      --text-primary: #f4f4f6;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
       --accent-send: #ffffff;
-      --accent-send-icon: #000000;
+      --accent-send-icon: #141416;
       --accent-danger: #ef4444;
       --accent-danger-hover: #dc2626;
+      --brand-gradient: linear-gradient(135deg, #6366f1, #a855f7);
       --radius-sm: 8px;
       --radius-md: 12px;
       --radius-lg: 18px;
@@ -48,20 +49,21 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Backdrop for mobile drawer */
+    /* Mobile Drawer Backdrop */
     #sidebar-backdrop {
       display: none;
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       z-index: 45;
       opacity: 0;
       transition: opacity 0.2s ease;
     }
 
     /* ======================================================== */
-    /* CHATGPT SIDEBAR                                          */
+    /* MINIMI SIDEBAR (Sleek Dark Navigation)                   */
     /* ======================================================== */
     #sidebar {
       width: var(--sidebar-width);
@@ -70,7 +72,7 @@
       flex-direction: column;
       z-index: 50;
       flex-shrink: 0;
-      border-right: 1px solid rgba(255, 255, 255, 0.04);
+      border-right: 1px solid var(--border-subtle);
       transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.2s ease;
       position: relative;
     }
@@ -82,7 +84,7 @@
     }
 
     .sidebar-header {
-      padding: 0.85rem 0.9rem 0.65rem 0.9rem;
+      padding: 0.95rem 1rem 0.75rem 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -91,35 +93,33 @@
     .brand-link {
       display: flex;
       align-items: center;
-      gap: 0.55rem;
+      gap: 0.65rem;
       color: var(--text-primary);
       text-decoration: none;
-      font-size: 1.05rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
+      font-size: 1.12rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
     }
 
-    .brand-logo-icon {
-      width: 24px;
-      height: 24px;
+    .brand-logo-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      background: var(--brand-gradient);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--text-primary);
-    }
-
-    .sidebar-actions-top {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+      flex-shrink: 0;
     }
 
     .icon-btn-ghost {
       background: transparent;
       border: none;
       color: var(--text-secondary);
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
       border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
@@ -128,16 +128,16 @@
       transition: background 0.15s, color 0.15s;
     }
     .icon-btn-ghost:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--bg-hover);
       color: var(--text-primary);
     }
 
     /* New Chat Button */
-    .btn-new-chat-box {
-      margin: 0.35rem 0.75rem 0.75rem 0.75rem;
+    .btn-new-chat-row {
+      margin: 0.35rem 0.85rem 0.65rem 0.85rem;
       padding: 0.65rem 0.85rem;
       background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
       color: var(--text-primary);
       display: flex;
@@ -149,16 +149,16 @@
       font-weight: 500;
       transition: all 0.15s ease;
     }
-    .btn-new-chat-box:hover {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.2);
+    .btn-new-chat-row:hover {
+      background: var(--bg-hover);
+      border-color: rgba(255, 255, 255, 0.18);
     }
-    .btn-new-chat-left {
+    .btn-new-chat-inner {
       display: flex;
       align-items: center;
       gap: 0.65rem;
     }
-    .shortcut-badge {
+    .kbd-shortcut {
       font-size: 0.72rem;
       color: var(--text-muted);
       background: rgba(255, 255, 255, 0.05);
@@ -166,37 +166,35 @@
       border-radius: 4px;
     }
 
-    /* Quick ChatGPT menu links */
-    .sidebar-quick-nav {
-      padding: 0 0.75rem 0.5rem 0.75rem;
+    /* Agent Core Capabilities Card */
+    .capabilities-box {
+      margin: 0 0.85rem 0.75rem 0.85rem;
+      padding: 0.65rem 0.75rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
       display: flex;
       flex-direction: column;
-      gap: 0.15rem;
+      gap: 0.35rem;
     }
-    .nav-item-link {
+    .capability-item {
       display: flex;
       align-items: center;
-      gap: 0.7rem;
-      padding: 0.5rem 0.65rem;
-      border-radius: var(--radius-sm);
+      gap: 0.5rem;
+      font-size: 0.76rem;
       color: var(--text-secondary);
-      font-size: 0.86rem;
-      font-weight: 500;
-      text-decoration: none;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
     }
-    .nav-item-link:hover {
-      background: rgba(255, 255, 255, 0.06);
+    .capability-item strong {
       color: var(--text-primary);
+      font-weight: 600;
     }
 
-    /* Section divider */
+    /* Section Divider */
     .sidebar-section-title {
-      padding: 0.65rem 0.9rem 0.35rem 0.9rem;
-      font-size: 0.74rem;
+      padding: 0.65rem 1rem 0.35rem 1rem;
+      font-size: 0.72rem;
       font-weight: 600;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
       color: var(--text-muted);
       text-transform: uppercase;
     }
@@ -223,7 +221,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.55rem 0.65rem;
+      padding: 0.55rem 0.75rem;
       border-radius: var(--radius-sm);
       cursor: pointer;
       color: var(--text-secondary);
@@ -232,11 +230,11 @@
       transition: background 0.15s, color 0.15s;
     }
     .session-item:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--bg-hover);
       color: var(--text-primary);
     }
     .session-item.active {
-      background: #212121;
+      background: var(--bg-capsule);
       color: var(--text-primary);
       font-weight: 500;
     }
@@ -277,10 +275,10 @@
       background: rgba(239, 68, 68, 0.12);
     }
 
-    /* Sidebar profile footer */
+    /* Sidebar Footer Profile */
     .sidebar-footer {
       padding: 0.75rem 0.85rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      border-top: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -297,13 +295,13 @@
       transition: background 0.15s;
     }
     .user-profile-row:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--bg-hover);
     }
     .user-avatar-circle {
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #3b82f6, #10a37f);
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -312,17 +310,26 @@
       color: #ffffff;
       flex-shrink: 0;
     }
+    .user-meta-col {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
     .user-name-text {
-      font-size: 0.88rem;
-      font-weight: 500;
+      font-size: 0.86rem;
+      font-weight: 600;
       color: var(--text-primary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .user-role-text {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
 
     /* ======================================================== */
-    /* MAIN CANVAS                                              */
+    /* MAIN CHAT CANVAS                                         */
     /* ======================================================== */
     #main {
       flex: 1;
@@ -334,10 +341,10 @@
       overflow: hidden;
     }
 
-    /* Minimalist Top Bar */
+    /* Top Bar */
     #top-nav {
       height: 52px;
-      padding: 0 1rem;
+      padding: 0 1.25rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -363,30 +370,28 @@
       transition: all 0.15s;
     }
     .btn-sidebar-toggle:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--bg-hover);
       color: var(--text-primary);
     }
 
     .model-selector-pill {
-      font-size: 1.05rem;
+      font-size: 0.98rem;
       font-weight: 600;
-      color: var(--text-secondary);
+      color: var(--text-primary);
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      cursor: pointer;
-      padding: 0.3rem 0.5rem;
+      gap: 0.45rem;
+      padding: 0.3rem 0.55rem;
       border-radius: var(--radius-sm);
-      transition: all 0.15s;
-    }
-    .model-selector-pill:hover {
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--text-primary);
+      cursor: default;
     }
     .model-selector-pill span.subtag {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 500;
       color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
     }
 
     .nav-right-group {
@@ -414,7 +419,7 @@
     }
 
     /* ======================================================== */
-    /* CHAT STREAM & MESSAGES                                   */
+    /* CHAT VIEWPORT & CENTERING LOGIC                          */
     /* ======================================================== */
     #messages-wrapper {
       flex: 1;
@@ -426,16 +431,7 @@
       scroll-behavior: smooth;
     }
 
-    #messages {
-      width: 100%;
-      max-width: 768px;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      padding: 1rem 0;
-    }
-
-    /* Centered Empty State (Hero) */
+    /* Centered Empty State Hero */
     #hero-empty-state {
       display: flex;
       flex-direction: column;
@@ -445,17 +441,45 @@
       text-align: center;
       width: 100%;
       max-width: 768px;
-      padding: 2rem 1rem;
+      padding: 2.5rem 1rem 1.5rem 1rem;
+    }
+    .hero-sparkle-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--brand-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
     }
     .hero-title {
-      font-size: 2rem;
+      font-size: 2.1rem;
       font-weight: 600;
       color: var(--text-primary);
-      margin-bottom: 2rem;
+      margin-bottom: 0.5rem;
       letter-spacing: -0.025em;
     }
+    .hero-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      max-width: 520px;
+      line-height: 1.5;
+      margin-bottom: 2rem;
+    }
 
-    /* Message Bubbles */
+    /* Active Messages Stream */
+    #messages {
+      width: 100%;
+      max-width: 768px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding: 1.25rem 0;
+    }
+
     .msg-row {
       display: flex;
       width: 100%;
@@ -467,22 +491,22 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* User Turn */
+    /* User Message Bubble */
     .msg-row.user {
       justify-content: flex-end;
     }
     .msg-row.user .msg-content-box {
-      background-color: var(--bg-input);
+      background-color: var(--bg-capsule);
       color: var(--text-primary);
       padding: 0.75rem 1.15rem;
       border-radius: 20px;
-      max-width: 75%;
+      max-width: 78%;
       font-size: 0.98rem;
       line-height: 1.55;
       word-break: break-word;
     }
 
-    /* Assistant Turn */
+    /* Assistant Message */
     .msg-row.assistant {
       justify-content: flex-start;
       align-items: flex-start;
@@ -491,15 +515,14 @@
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: #171717;
+      background: var(--brand-gradient);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.9rem;
-      color: var(--text-primary);
+      color: #ffffff;
       flex-shrink: 0;
       margin-top: 2px;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
     }
     .msg-row.assistant .msg-content-box {
       flex: 1;
@@ -509,14 +532,14 @@
       line-height: 1.65;
     }
 
-    /* Tool Call Indicator Pill (ChatGPT Source Style) */
+    /* Web Search Source Pill */
     .search-source-pill {
       display: inline-flex;
       align-items: center;
       gap: 0.45rem;
       background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      padding: 0.3rem 0.7rem;
+      border: 1px solid var(--border-subtle);
+      padding: 0.3rem 0.75rem;
       border-radius: 9999px;
       font-size: 0.78rem;
       color: var(--text-secondary);
@@ -524,23 +547,12 @@
       font-family: 'JetBrains Mono', monospace;
     }
 
-    /* Markdown styling inside assistant response */
-    .msg-content-box p {
-      margin-bottom: 0.85rem;
-    }
-    .msg-content-box p:last-child {
-      margin-bottom: 0;
-    }
-    .msg-content-box strong {
-      color: #ffffff;
-      font-weight: 600;
-    }
-    .msg-content-box ul, .msg-content-box ol {
-      margin: 0.5rem 0 0.85rem 1.4rem;
-    }
-    .msg-content-box li {
-      margin-bottom: 0.35rem;
-    }
+    /* Markdown Elements */
+    .msg-content-box p { margin-bottom: 0.85rem; }
+    .msg-content-box p:last-child { margin-bottom: 0; }
+    .msg-content-box strong { color: #ffffff; font-weight: 600; }
+    .msg-content-box ul, .msg-content-box ol { margin: 0.5rem 0 0.85rem 1.4rem; }
+    .msg-content-box li { margin-bottom: 0.35rem; }
     .msg-content-box code {
       font-family: 'JetBrains Mono', monospace;
       background: rgba(255, 255, 255, 0.08);
@@ -550,13 +562,11 @@
       color: #e2e8f0;
     }
     .msg-content-box a {
-      color: #60a5fa;
+      color: #818cf8;
       text-decoration: underline;
       text-underline-offset: 3px;
     }
-    .msg-content-box a:hover {
-      color: #93c5fd;
-    }
+    .msg-content-box a:hover { color: #a5b4fc; }
 
     /* Typing Dots */
     .typing-loader {
@@ -580,7 +590,7 @@
     }
 
     /* ======================================================== */
-    /* CHATGPT CAPSULE INPUT SECTION                            */
+    /* CHATGPT-STYLE CAPSULE INPUT DOCK                         */
     /* ======================================================== */
     #bottom-dock {
       width: 100%;
@@ -601,7 +611,7 @@
       gap: 0.65rem;
     }
 
-    /* Prompt Suggestion Chips */
+    /* Starter Suggestion Chips */
     .starter-chips-row {
       display: flex;
       gap: 0.5rem;
@@ -614,7 +624,7 @@
 
     .starter-chip {
       background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-subtle);
       color: var(--text-secondary);
       padding: 0.45rem 0.95rem;
       border-radius: 9999px;
@@ -633,45 +643,24 @@
       border-color: rgba(255, 255, 255, 0.2);
     }
 
-    /* The ChatGPT Floating Capsule */
-    .chatgpt-input-capsule {
-      background: var(--bg-input);
+    /* The Input Capsule */
+    .capsule-box {
+      background: var(--bg-capsule);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-capsule);
-      padding: 0.6rem 0.85rem 0.6rem 1rem;
+      padding: 0.6rem 0.85rem 0.6rem 1.15rem;
       display: flex;
       align-items: flex-end;
       gap: 0.5rem;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
-    .chatgpt-input-capsule:focus-within {
+    .capsule-box:focus-within {
+      background: var(--bg-capsule-focus);
       border-color: var(--border-focus);
       box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
     }
 
-    /* Plus (+) button */
-    .btn-input-tool {
-      background: transparent;
-      border: none;
-      color: var(--text-secondary);
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      flex-shrink: 0;
-      margin-bottom: 2px;
-      transition: all 0.15s;
-    }
-    .btn-input-tool:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-primary);
-    }
-
-    /* Textarea */
     #prompt-input {
       flex: 1;
       background: transparent;
@@ -689,42 +678,35 @@
       color: var(--text-muted);
     }
 
-    /* Input Right Action Group */
-    .input-right-tools {
+    .input-actions-right {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.45rem;
       flex-shrink: 0;
       margin-bottom: 2px;
     }
 
-    /* Think toggle button (ChatGPT style) */
-    .btn-think-tool {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    .badge-tool-indicator {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
       color: var(--text-secondary);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 500;
       padding: 0.25rem 0.6rem;
       border-radius: 9999px;
       display: flex;
       align-items: center;
       gap: 0.35rem;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .btn-think-tool:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-primary);
+      cursor: default;
     }
 
-    /* Send Button (Iconic ChatGPT upward arrow circle) */
+    /* Round Upward Arrow Send Button */
     #btn-send {
       width: 34px;
       height: 34px;
       border-radius: 50%;
-      background: #424242;
-      color: #878787;
+      background: #424248;
+      color: #878792;
       border: none;
       display: flex;
       align-items: center;
@@ -740,10 +722,9 @@
     }
     #btn-send.active:hover {
       opacity: 0.92;
-      transform: scale(1.04);
+      transform: scale(1.05);
     }
 
-    /* Footer Disclaimer */
     .disclaimer-text {
       text-align: center;
       font-size: 0.72rem;
@@ -752,13 +733,13 @@
     }
 
     /* ======================================================== */
-    /* CUSTOM IN-APP POPUP MODAL (REPLACES BROWSER ALERT)       */
+    /* CUSTOM IN-APP CONFIRMATION POPUP MODAL (NO ALERT BOX)    */
     /* ======================================================== */
     #modal-backdrop {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.65);
+      background: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       z-index: 100;
@@ -773,40 +754,40 @@
       opacity: 1;
     }
 
-    .modal-box {
-      background: #212121;
+    .modal-card {
+      background: #1c1c20;
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: var(--radius-lg);
       width: 100%;
-      max-width: 440px;
+      max-width: 420px;
       padding: 1.5rem;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
       transform: scale(0.95);
       transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    #modal-backdrop.show .modal-box {
+    #modal-backdrop.show .modal-card {
       transform: scale(1);
     }
 
-    .modal-header {
+    .modal-title {
       font-size: 1.15rem;
       font-weight: 600;
       color: var(--text-primary);
       margin-bottom: 0.65rem;
     }
 
-    .modal-body {
+    .modal-message {
       font-size: 0.92rem;
       color: var(--text-secondary);
       line-height: 1.5;
       margin-bottom: 1.5rem;
       word-break: break-word;
     }
-    .modal-body strong {
+    .modal-message strong {
       color: var(--text-primary);
     }
 
-    .modal-actions {
+    .modal-button-row {
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -815,7 +796,7 @@
 
     .btn-modal-cancel {
       background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-subtle);
       color: var(--text-primary);
       padding: 0.55rem 1.1rem;
       border-radius: 9999px;
@@ -844,7 +825,7 @@
     }
 
     /* ======================================================== */
-    /* RESPONSIVE LAYOUT (MOBILE, TABLET, LAPTOP)               */
+    /* RESPONSIVE DESIGN (Mobile / Tablet / Laptop)             */
     /* ======================================================== */
     @media (max-width: 768px) {
       #sidebar {
@@ -853,7 +834,7 @@
         bottom: 0;
         left: 0;
         transform: translateX(-100%);
-        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+        box-shadow: 12px 0 35px rgba(0, 0, 0, 0.65);
       }
       #sidebar.open {
         transform: translateX(0);
@@ -862,14 +843,14 @@
         display: block;
       }
       .hero-title {
-        font-size: 1.5rem;
-        margin-bottom: 1.25rem;
+        font-size: 1.6rem;
+      }
+      .hero-subtitle {
+        font-size: 0.88rem;
+        margin-bottom: 1.5rem;
       }
       .starter-chips-row {
         justify-content: flex-start;
-      }
-      .btn-think-tool {
-        display: none;
       }
       .msg-row.user .msg-content-box {
         max-width: 88%;
@@ -879,79 +860,67 @@
 </head>
 <body>
 
-  <!-- Backdrop for Mobile Sidebar -->
+  <!-- Mobile Drawer Backdrop -->
   <div id="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
 
-  <!-- ChatGPT Left Sidebar -->
+  <!-- Left Sidebar (Minimi Brand & History) -->
   <aside id="sidebar">
     <div class="sidebar-header">
       <a href="/" class="brand-link">
-        <div class="brand-logo-icon">
-          <!-- ChatGPT Sparkle SVG -->
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/>
-          </svg>
-        </div>
-        <span>ChatGPT</span>
+        <div class="brand-logo-mark">✦</div>
+        <span>minimi</span>
       </a>
-      <div class="sidebar-actions-top">
-        <button class="icon-btn-ghost" onclick="toggleSidebar(false)" title="Close sidebar" aria-label="Close sidebar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="9" y1="3" x2="9" y2="21"></line>
-          </svg>
-        </button>
-      </div>
+      <button class="icon-btn-ghost" onclick="toggleSidebar(false)" title="Collapse sidebar" aria-label="Collapse sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+        </svg>
+      </button>
     </div>
 
-    <!-- New Chat Button -->
-    <button class="btn-new-chat-box" onclick="startNewChat()">
-      <div class="btn-new-chat-left">
+    <!-- New Chat Action -->
+    <button class="btn-new-chat-row" onclick="startNewChat()">
+      <div class="btn-new-chat-inner">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 20h9"></path>
           <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
         </svg>
         <span>New chat</span>
       </div>
-      <span class="shortcut-badge">⌘N</span>
+      <span class="kbd-shortcut">⌘N</span>
     </button>
 
-    <!-- Navigation links from ChatGPT screenshot -->
-    <div class="sidebar-quick-nav">
-      <div class="nav-item-link" onclick="applySample('Generate a photo concept for a technology startup')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-        <span>Images</span>
+    <!-- Capabilities summary -->
+    <div class="capabilities-box">
+      <div class="capability-item">
+        <span>🌐</span>
+        <span><strong>Search:</strong> Multi-tier fallback</span>
       </div>
-      <div class="nav-item-link" onclick="applySample('What did we schedule or verify on 3 November?')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <span>Scheduled</span>
-      </div>
-      <div class="nav-item-link" onclick="applySample('Review past technical discussions in memory')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        <span>Library</span>
-      </div>
-      <div class="nav-item-link" onclick="applySample('What web search tools and fallbacks are active?')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-        <span>Plugins</span>
+      <div class="capability-item">
+        <span>🧠</span>
+        <span><strong>Memory:</strong> SQLite WAL</span>
       </div>
     </div>
 
-    <!-- Past conversations section -->
-    <div class="sidebar-section-title">Chats</div>
+    <!-- Past conversations list -->
+    <div class="sidebar-section-title">Recent Chats</div>
     <div class="session-list-scroll">
       <ul id="session-list"></ul>
     </div>
 
-    <!-- User Profile Footer matching user's screenshot -->
+    <!-- User Profile Footer -->
     <div class="sidebar-footer">
-      <div class="user-profile-row" title="User Profile: Dinakaran S">
+      <div class="user-profile-row" title="Active User: Dinakaran S">
         <div class="user-avatar-circle">D</div>
-        <div class="user-name-text">Dinakaran S</div>
+        <div class="user-meta-col">
+          <div class="user-name-text">Dinakaran S</div>
+          <div class="user-role-text">Candidate / Evaluator</div>
+        </div>
       </div>
-      <button class="icon-btn-ghost" title="Settings" aria-label="Settings">
+      <button class="icon-btn-ghost" onclick="startNewChat()" title="Start Fresh Chat" aria-label="New chat">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
       </button>
     </div>
@@ -961,15 +930,15 @@
   <main id="main">
     <header id="top-nav">
       <div class="nav-left-group">
-        <button class="btn-sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle Navigation">
+        <button class="btn-sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="9" y1="3" x2="9" y2="21"></line>
           </svg>
         </button>
-        <div class="model-selector-pill" id="active-model-title">
-          <span>minimi</span>
-          <span class="subtag">✦ gemini-flash-lite</span>
+        <div class="model-selector-pill">
+          <span>minimi agent</span>
+          <span class="subtag">gemini-flash-lite</span>
         </div>
       </div>
       <div class="nav-right-group">
@@ -982,39 +951,34 @@
 
     <!-- Chat Messages Scroll Container -->
     <div id="messages-wrapper">
-      <!-- Centered Hero Screen for Empty State -->
+      <!-- Empty State Hero -->
       <div id="hero-empty-state">
-        <h1 class="hero-title">Where should we begin?</h1>
+        <div class="hero-sparkle-icon">✦</div>
+        <h1 class="hero-title">What would you like to explore?</h1>
+        <p class="hero-subtitle">Equipped with real-time web search, temporal memory across past days, and automated pricing diff synthesis.</p>
       </div>
 
-      <!-- Active Message List -->
+      <!-- Active Message Stream -->
       <div id="messages" style="display: none;"></div>
     </div>
 
-    <!-- ChatGPT Floating Bottom Dock -->
+    <!-- Capsule Bottom Dock (ChatGPT-inspired layout) -->
     <footer id="bottom-dock">
       <div class="bottom-center-container">
-        <!-- Input Capsule -->
-        <div class="chatgpt-input-capsule">
-          <button class="btn-input-tool" type="button" title="Add attachment or tool" aria-label="Tools">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-          </button>
-
+        <!-- Floating Input Capsule -->
+        <div class="capsule-box">
           <textarea id="prompt-input" rows="1" placeholder="Ask anything, compare pricing, or query past days..." autocomplete="off"></textarea>
 
-          <div class="input-right-tools">
-            <button class="btn-think-tool" type="button" title="Reasoning &amp; search verification">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2a6 6 0 0 0-6 6c0 2.22 1.21 4.16 3 5.2V17a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-3.8c1.79-1.04 3-2.98 3-5.2a6 6 0 0 0-6-6z"/>
-                <line x1="9" y1="21" x2="15" y2="21"/>
+          <div class="input-actions-right">
+            <div class="badge-tool-indicator" title="Autonomous 1-tool search active">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
-              <span>Think</span>
-            </button>
+              <span>Search</span>
+            </div>
 
-            <!-- Send button: Round upward arrow like ChatGPT -->
+            <!-- Round upward arrow send button -->
             <button id="btn-send" type="button" onclick="submitPrompt()" aria-label="Send prompt">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="19" x2="12" y2="5"></line>
@@ -1041,22 +1005,22 @@
         </div>
 
         <div class="disclaimer-text">
-          minimi can make mistakes. Verify important info. Zero-Key search fallback active.
+          minimi agent • Real-time web search fallback &amp; temporal memory enabled.
         </div>
       </div>
     </footer>
   </main>
 
   <!-- ======================================================== -->
-  <!-- CUSTOM IN-APP CONFIRMATION POPUP MODAL                   -->
+  <!-- CUSTOM IN-APP CONFIRMATION POPUP MODAL (NO ALERT BOX)    -->
   <!-- ======================================================== -->
   <div id="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-box">
-      <div class="modal-header" id="modal-title">Delete chat?</div>
-      <div class="modal-body" id="modal-body-text">
+    <div class="modal-card">
+      <div class="modal-title" id="modal-title">Delete chat?</div>
+      <div class="modal-message" id="modal-message-text">
         This will delete this conversation. This action cannot be undone.
       </div>
-      <div class="modal-actions">
+      <div class="modal-button-row">
         <button class="btn-modal-cancel" id="btn-modal-cancel" onclick="closeDeleteModal()">Cancel</button>
         <button class="btn-modal-danger" id="btn-modal-confirm" onclick="confirmDeleteModal()">Delete</button>
       </div>
@@ -1077,9 +1041,9 @@
     const sidebar = document.getElementById("sidebar");
     const sidebarBackdrop = document.getElementById("sidebar-backdrop");
     const modalBackdrop = document.getElementById("modal-backdrop");
-    const modalBodyText = document.getElementById("modal-body-text");
+    const modalMessageText = document.getElementById("modal-message-text");
 
-    // Auto-resizing textarea
+    // Auto-resizing textarea & enable/disable send button
     inputEl.addEventListener("input", function() {
       this.style.height = "auto";
       this.style.height = Math.min(this.scrollHeight, 160) + "px";
@@ -1088,7 +1052,7 @@
       btnSend.disabled = !hasText;
     });
 
-    // Enter to submit (Shift+Enter for line break)
+    // Enter to submit (Shift+Enter for newline)
     inputEl.addEventListener("keydown", function(e) {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -1096,7 +1060,7 @@
       }
     });
 
-    // Keyboard Shortcuts: Cmd+N / Ctrl+N for new chat, Escape to close modal
+    // Shortcuts: Cmd+N / Ctrl+N for new chat, Escape for modal
     window.addEventListener("keydown", function(e) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "n") {
         e.preventDefault();
@@ -1128,7 +1092,7 @@
       btnSend.disabled = false;
     }
 
-    // Markdown Parser (links, bold, italic, code blocks, bullet points)
+    // Markdown Parser
     function formatMarkdown(text) {
       if (!text) return "";
       let html = text
@@ -1193,7 +1157,7 @@
       }
     }
 
-    // Switch between sessions
+    // Switch session
     async function selectSession(sId, title) {
       currentSessionId = sId;
       toggleSidebar(false);
@@ -1218,13 +1182,11 @@
       }
     }
 
-    // ========================================================
-    // CUSTOM IN-APP POPUP MODAL LOGIC (Zero native alerts)
-    // ========================================================
+    // Custom in-app confirmation modal (replacing browser alerts)
     function openDeleteModal(sId, title) {
       pendingDeleteSessionId = sId;
       const cleanTitle = title || "this chat";
-      modalBodyText.innerHTML = 'This will delete <strong>' + cleanTitle.replace(/</g, "&lt;") + '</strong>.<br>This action cannot be undone.';
+      modalMessageText.innerHTML = 'This will delete <strong>' + cleanTitle.replace(/</g, "&lt;") + '</strong>.<br>This action cannot be undone.';
       modalBackdrop.classList.add("show");
     }
 
@@ -1233,7 +1195,6 @@
       modalBackdrop.classList.remove("show");
     }
 
-    // Close on click outside the modal box
     modalBackdrop.addEventListener("click", function(e) {
       if (e.target === modalBackdrop) {
         closeDeleteModal();
@@ -1272,7 +1233,6 @@
     }
 
     function appendMessage(role, text, timeStr, steps) {
-      // Transition from empty hero to chat view
       heroEmptyState.style.display = "none";
       starterChips.style.display = "none";
       messagesEl.style.display = "flex";
@@ -1283,7 +1243,7 @@
       if (role === "assistant") {
         const avatar = document.createElement("div");
         avatar.className = "msg-avatar";
-        avatar.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>';
+        avatar.textContent = "✦";
         row.appendChild(avatar);
       }
 
@@ -1320,11 +1280,11 @@
       btnSend.classList.remove("active");
       btnSend.disabled = true;
 
-      // Temporary loading indicator
+      // Loading state indicator
       const loaderRow = document.createElement("div");
       loaderRow.className = "msg-row assistant";
       loaderRow.id = "temp-loader";
-      loaderRow.innerHTML = '<div class="msg-avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg></div><div class="msg-content-box"><div class="typing-loader"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div></div>';
+      loaderRow.innerHTML = '<div class="msg-avatar">✦</div><div class="msg-content-box"><div class="typing-loader"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div></div>';
       messagesEl.appendChild(loaderRow);
       messagesWrapper.scrollTop = messagesWrapper.scrollHeight;
 
