@@ -1,5 +1,6 @@
 import { sanitizeSearchQuery } from "./query_sanitizer.js";
 import { searchTavily } from "./tavily.js";
+import { searchGoogleGrounding } from "./google_search.js";
 import { searchDuckDuckGo } from "./duckduckgo.js";
 import type { SearchResponse, SearchResultItem, SearchOptions } from "./types.js";
 
@@ -10,20 +11,34 @@ interface CacheEntry {
 
 export class SearchService {
   private tavilyApiKey?: string;
+  private geminiApiKey?: string;
   private cache: Map<string, CacheEntry> = new Map();
   private cacheTtlMs: number;
 
-  constructor(tavilyApiKey?: string, cacheTtlMs: number = 5 * 60 * 1000) {
-    this.tavilyApiKey = tavilyApiKey?.trim() || undefined;
-    this.cacheTtlMs = cacheTtlMs;
+  constructor(tavilyApiKey?: string, geminiApiKeyOrTtl?: string | number, cacheTtlMs?: number) {
+    this.tavilyApiKey = typeof tavilyApiKey === "string" ? tavilyApiKey.trim() || undefined : undefined;
+    if (typeof geminiApiKeyOrTtl === "number") {
+      this.cacheTtlMs = geminiApiKeyOrTtl;
+      this.geminiApiKey = undefined;
+    } else {
+      this.geminiApiKey = typeof geminiApiKeyOrTtl === "string" ? geminiApiKeyOrTtl.trim() || undefined : undefined;
+      this.cacheTtlMs = cacheTtlMs || 5 * 60 * 1000;
+    }
   }
 
   public setTavilyApiKey(key?: string): void {
     this.tavilyApiKey = key?.trim() || undefined;
   }
 
+  public setGeminiApiKey(key?: string): void {
+    this.geminiApiKey = key?.trim() || undefined;
+  }
+
   /**
-   * Resilient search orchestrator with sanitization, caching, and multi-tier fallback.
+   * Resilient search orchestrator with sanitization, caching, and multi-tier fallback:
+   * 1. Tavily API (if configured)
+   * 2. Google Search Grounding (built-in live Google index via Gemini)
+   * 3. DuckDuckGo Scraper (emergency fallback)
    */
   public async search(rawQuery: string, options: SearchOptions = {}): Promise<SearchResponse> {
     const sanitized = sanitizeSearchQuery(rawQuery);
@@ -49,22 +64,33 @@ export class SearchService {
     }
 
     let results: SearchResultItem[] = [];
-    let provider: "tavily" | "duckduckgo" | "fallback" = "duckduckgo";
+    let provider: "tavily" | "google" | "duckduckgo" | "fallback" = "google";
     let lastError: string | undefined;
 
-    // 2. Try primary (Tavily) if API key configured
+    // 2. Tier 1: Try Tavily if configured
     if (this.tavilyApiKey) {
       try {
         results = await searchTavily(sanitized.sanitized, this.tavilyApiKey, options);
         provider = "tavily";
       } catch (err: unknown) {
         lastError = err instanceof Error ? err.message : String(err);
-        // Fallback to DuckDuckGo
-        console.warn(`[SearchService] Tavily failed (${lastError}), engaging DuckDuckGo fallback.`);
+        console.warn(`[SearchService] Tavily failed (${lastError}), trying Google Search grounding.`);
       }
     }
 
-    // 3. Fallback to DuckDuckGo if Tavily was not used or failed
+    // 3. Tier 2: Google Search Grounding (Real-time live Google Search index)
+    if (results.length === 0 && this.geminiApiKey) {
+      try {
+        results = await searchGoogleGrounding(sanitized.sanitized, this.geminiApiKey, options);
+        provider = "google" as any;
+      } catch (googleErr: unknown) {
+        const gMsg = googleErr instanceof Error ? googleErr.message : String(googleErr);
+        lastError = lastError ? `${lastError} | Google: ${gMsg}` : gMsg;
+        console.warn(`[SearchService] Google Search grounding failed (${gMsg}), falling back to DuckDuckGo.`);
+      }
+    }
+
+    // 4. Tier 3: DuckDuckGo Fallback
     if (results.length === 0) {
       try {
         results = await searchDuckDuckGo(sanitized.sanitized, options);
@@ -78,7 +104,7 @@ export class SearchService {
 
     const response: SearchResponse = {
       query: sanitized.sanitized,
-      provider,
+      provider: provider as any,
       results,
       error: results.length === 0 && lastError ? lastError : undefined,
     };
@@ -105,10 +131,12 @@ export class SearchService {
       return `[Web Search for "${response.query}" returned 0 results.]`;
     }
 
-    const formatted = response.results.map((item, index) => {
-      const datePart = item.publishedDate ? ` (Date: ${item.publishedDate})` : "";
-      return `[${index + 1}] "${item.title}"${datePart}\nURL: ${item.url}\nSummary: ${item.content}`;
-    }).join("\n\n");
+    const formatted = response.results
+      .map((item, index) => {
+        const datePart = item.publishedDate ? ` (Date: ${item.publishedDate})` : "";
+        return `[${index + 1}] "${item.title}"${datePart}\nURL: ${item.url}\nSummary: ${item.content}`;
+      })
+      .join("\n\n");
 
     return `Web Search Results for "${response.query}" (via ${response.provider}):\n\n${formatted}`;
   }

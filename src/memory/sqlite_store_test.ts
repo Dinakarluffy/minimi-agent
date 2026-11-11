@@ -13,14 +13,17 @@ describe("SqliteStore", () => {
     store.close();
   });
 
-  it("creates and retrieves sessions", () => {
-    const session = store.createSession("sess-1", "Test Session");
+  it("creates, updates title, and deletes sessions", () => {
+    const session = store.createSession("sess-1", "New Chat");
     expect(session.id).toBe("sess-1");
-    expect(session.title).toBe("Test Session");
+    expect(session.title).toBe("New Chat");
 
-    const fetched = store.getSession("sess-1");
-    expect(fetched).not.toBeNull();
-    expect(fetched?.title).toBe("Test Session");
+    store.updateSessionTitle("sess-1", "Next.js & Node.js Discussion");
+    const updated = store.getSession("sess-1");
+    expect(updated?.title).toBe("Next.js & Node.js Discussion");
+
+    store.deleteSession("sess-1");
+    expect(store.getSession("sess-1")).toBeNull();
   });
 
   it("saves and retrieves recent messages in order", () => {

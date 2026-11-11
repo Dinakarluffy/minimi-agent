@@ -61,6 +61,16 @@ export class SqliteStore {
     return stmt.all() as SessionRecord[];
   }
 
+  public updateSessionTitle(sessionId: string, title: string): void {
+    const stmt = this.db.prepare("UPDATE sessions SET title = ?, updated_at = ? WHERE id = ?");
+    stmt.run(title.trim(), new Date().toISOString(), sessionId);
+  }
+
+  public deleteSession(sessionId: string): void {
+    this.db.prepare("DELETE FROM messages WHERE session_id = ?").run(sessionId);
+    this.db.prepare("DELETE FROM sessions WHERE id = ?").run(sessionId);
+  }
+
   public saveMessage(msg: Omit<MessageRecord, "id">): number {
     const now = msg.timestamp ? new Date(msg.timestamp) : new Date();
     const timestamp = now.toISOString();
