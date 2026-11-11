@@ -1,6 +1,8 @@
 export interface FunctionCallItem {
   name: string;
   args: Record<string, any>;
+  id?: string;
+  thoughtSignature?: string;
 }
 
 export interface ContentPart {
@@ -20,6 +22,7 @@ export interface ContentItem {
 export interface LLMResponse {
   text?: string;
   functionCalls?: FunctionCallItem[];
+  modelParts?: any[];
   usage?: {
     promptTokens?: number;
     completionTokens?: number;
@@ -27,6 +30,14 @@ export interface LLMResponse {
   };
 }
 
+export interface LLMGenerateOptions {
+  disableTools?: boolean;
+}
+
 export interface LLMClientInterface {
-  generate(contents: ContentItem[], systemInstruction?: string): Promise<LLMResponse>;
+  generate(
+    contents: ContentItem[],
+    systemInstruction?: string,
+    options?: LLMGenerateOptions
+  ): Promise<LLMResponse>;
 }

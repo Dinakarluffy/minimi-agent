@@ -50,7 +50,10 @@ Operating Guidelines:
    - Never say "I do not have access to your personal information" if relevant past statements appear in your memory or context. Answer accurately based on the retrieved records.
 5. Tone & Conciseness:
    - Answer directly, clearly, and concisely.
-   - Always cite the URLs from web search when providing factual claims or pricing data.`;
+   - Always cite the URLs from web search when providing factual claims or pricing data.
+6. Search Efficiency & Synthesis:
+   - Aim to execute at most 1-2 targeted searches. Use natural keywords without restrictive operators or site-specific syntax.
+   - Once search results are received, immediately synthesize your final answer and answer the user. Do not issue repeated or redundant searches.`;
   }
 
   /**
@@ -112,21 +115,41 @@ Operating Guidelines:
     // 3. Assemble Gemini ContentItems
     const contents: ContentItem[] = [];
 
-    // Map recent messages
-    for (const msg of recentMessages) {
-      if (msg.role === "user") {
-        contents.push({ role: "user", parts: [{ text: msg.content }] });
-      } else if (msg.role === "assistant") {
-        contents.push({ role: "model", parts: [{ text: msg.content }] });
+    // Filter out the current user message if it was already inserted into recentMessages
+    // and exclude transient error records
+    const historyMessages = recentMessages.filter((msg, idx) => {
+      if (idx === recentMessages.length - 1 && msg.role === "user" && msg.content === currentUserInput) {
+        return false;
+      }
+      if (msg.role === "assistant" && msg.content.startsWith("[Error communicating with model:")) {
+        return false;
+      }
+      return true;
+    });
+
+    // Map historical messages ensuring no consecutive turns of the same role
+    for (const msg of historyMessages) {
+      const role = msg.role === "user" ? "user" : "model";
+      const lastItem = contents[contents.length - 1];
+
+      if (lastItem && lastItem.role === role) {
+        lastItem.parts.push({ text: msg.content });
+      } else {
+        contents.push({ role, parts: [{ text: msg.content }] });
       }
     }
 
     // Add current user input (with prepended past context if found)
     const finalUserText = contextHeader ? `${contextHeader}${currentUserInput}` : currentUserInput;
-    contents.push({
-      role: "user",
-      parts: [{ text: finalUserText }],
-    });
+    const lastItem = contents[contents.length - 1];
+    if (lastItem && lastItem.role === "user") {
+      lastItem.parts.push({ text: finalUserText });
+    } else {
+      contents.push({
+        role: "user",
+        parts: [{ text: finalUserText }],
+      });
+    }
 
     return { contents, retrievedContextCount: nonRedundantPast.length };
   }

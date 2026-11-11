@@ -68,6 +68,7 @@ export class AgentLoop {
 
     let iterations = 0;
     let finalAnswer = "";
+    const collectedSearchResults: string[] = [];
 
     // 3. Execution loop with hard circuit-breaker
     while (iterations < maxIterations) {
@@ -88,9 +89,27 @@ export class AgentLoop {
 
       // Handle Tool Calls (function calls)
       if (llmRes.functionCalls && llmRes.functionCalls.length > 0) {
+        // Append model turn preserving exact raw modelParts (contains thoughtSignature and IDs)
+        const modelPartsToAppend =
+          llmRes.modelParts && llmRes.modelParts.length > 0
+            ? llmRes.modelParts
+            : llmRes.functionCalls.map((fc) => ({ functionCall: fc }));
+
+        contents.push({
+          role: "model",
+          parts: modelPartsToAppend,
+        });
+
+        // Execute all function calls and gather their responses into a single user turn
+        const userResponseParts: any[] = [];
+
         for (const fc of llmRes.functionCalls) {
           if (fc.name === "web_search") {
-            const rawQuery = String(fc.args?.query || userInput).trim();
+            const rawQuery = String(
+              fc.args?.query ||
+              (Array.isArray(fc.args?.queries) ? fc.args.queries[0] : "") ||
+              userInput
+            ).trim();
 
             const toolCallStep: AgentStep = {
               type: "tool_call",
@@ -103,6 +122,7 @@ export class AgentLoop {
             // Execute search
             const searchResponse = await this.searchService.search(rawQuery);
             const formattedResult = this.searchService.formatForLLM(searchResponse);
+            collectedSearchResults.push(formattedResult);
 
             const toolResultStep: AgentStep = {
               type: "tool_result",
@@ -114,44 +134,35 @@ export class AgentLoop {
             steps.push(toolResultStep);
             onStep(toolResultStep);
 
-            // Append model tool-call turn and user tool-response turn to context
-            contents.push({
-              role: "model",
-              parts: [{ functionCall: fc }],
-            });
+            const funcResponseObj: Record<string, any> = {
+              name: "web_search",
+              response: {
+                output: formattedResult,
+              },
+            };
+            if (fc.id) {
+              funcResponseObj.id = fc.id;
+            }
 
-            contents.push({
-              role: "user",
-              parts: [
-                {
-                  functionResponse: {
-                    name: "web_search",
-                    response: {
-                      output: formattedResult,
-                    },
-                  },
-                },
-              ],
-            });
+            userResponseParts.push({ functionResponse: funcResponseObj });
           } else {
-            // Unknown tool safety fallback
-            contents.push({
-              role: "model",
-              parts: [{ functionCall: fc }],
-            });
-            contents.push({
-              role: "user",
-              parts: [
-                {
-                  functionResponse: {
-                    name: fc.name,
-                    response: { error: `Tool ${fc.name} is not supported. Use web_search.` },
-                  },
-                },
-              ],
+            // Unknown tool fallback
+            userResponseParts.push({
+              functionResponse: {
+                name: fc.name,
+                ...(fc.id ? { id: fc.id } : {}),
+                response: { error: `Tool ${fc.name} is not supported. Use web_search.` },
+              },
             });
           }
         }
+
+        // Append the user tool responses as a SINGLE turn matching the model's function calls
+        contents.push({
+          role: "user",
+          parts: userResponseParts,
+        });
+
         // Continue loop to allow model to synthesize search results
         continue;
       }
@@ -167,8 +178,37 @@ export class AgentLoop {
       break;
     }
 
-    if (!finalAnswer && iterations >= maxIterations) {
-      finalAnswer = "I completed several web searches but reached the maximum allowed tool iterations. Please refine your query.";
+    if (!finalAnswer) {
+      // If loop finished after searching without textual answer, synthesize directly from all gathered search results
+      if (collectedSearchResults.length > 0) {
+        try {
+          const synthesisPrompt = `User Question: "${userInput}"
+
+Web Search Results:
+${collectedSearchResults.join("\n\n---\n\n")}
+
+Based on the web search results above, answer the user's question directly, accurately, and concisely. Cite the source URLs.`;
+
+          const synthesisInstruction =
+            "You are a helpful, fact-grounded assistant. Provide a direct, complete, and factual response to the user's question using the provided web search results. Cite all source URLs.";
+
+          const synthesisRes = await this.llm.generate(
+            [{ role: "user", parts: [{ text: synthesisPrompt }] }],
+            synthesisInstruction,
+            { disableTools: true }
+          );
+
+          if (synthesisRes.text && synthesisRes.text.trim()) {
+            finalAnswer = synthesisRes.text.trim();
+          }
+        } catch (err: unknown) {
+          console.warn("[AgentLoop] Synthesis fallback error:", err);
+        }
+      }
+
+      if (!finalAnswer) {
+        finalAnswer = "I completed several web searches but reached the maximum allowed tool iterations. Please refine your query.";
+      }
     }
 
     // 4. Persist assistant final reply to memory

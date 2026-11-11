@@ -7,7 +7,7 @@ export interface SearchResultItem {
 
 export interface SearchResponse {
   query: string;
-  provider: "tavily" | "duckduckgo" | "cache" | "fallback";
+  provider: "tavily" | "bing" | "duckduckgo" | "google" | "cache" | "fallback";
   results: SearchResultItem[];
   error?: string;
 }

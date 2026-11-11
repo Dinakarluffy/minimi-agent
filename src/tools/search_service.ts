@@ -1,7 +1,8 @@
 import { sanitizeSearchQuery } from "./query_sanitizer.js";
 import { searchTavily } from "./tavily.js";
-import { searchGoogleGrounding } from "./google_search.js";
+import { searchBing } from "./bing.js";
 import { searchDuckDuckGo } from "./duckduckgo.js";
+import { searchGoogleGrounding } from "./google_search.js";
 import type { SearchResponse, SearchResultItem, SearchOptions } from "./types.js";
 
 interface CacheEntry {
@@ -37,8 +38,9 @@ export class SearchService {
   /**
    * Resilient search orchestrator with sanitization, caching, and multi-tier fallback:
    * 1. Tavily API (if configured)
-   * 2. Google Search Grounding (built-in live Google index via Gemini)
-   * 3. DuckDuckGo Scraper (emergency fallback)
+   * 2. Bing Search (Fast, unmetered, zero API key)
+   * 3. DuckDuckGo (zero API key fallback)
+   * 4. Google Search Grounding fallback
    */
   public async search(rawQuery: string, options: SearchOptions = {}): Promise<SearchResponse> {
     const sanitized = sanitizeSearchQuery(rawQuery);
@@ -64,47 +66,63 @@ export class SearchService {
     }
 
     let results: SearchResultItem[] = [];
-    let provider: "tavily" | "google" | "duckduckgo" | "fallback" = "google";
+    let provider: "tavily" | "bing" | "duckduckgo" | "google" | "fallback" = "fallback";
     let lastError: string | undefined;
 
     // 2. Tier 1: Try Tavily if configured
     if (this.tavilyApiKey) {
       try {
         results = await searchTavily(sanitized.sanitized, this.tavilyApiKey, options);
-        provider = "tavily";
+        if (results.length > 0) {
+          provider = "tavily";
+        }
       } catch (err: unknown) {
         lastError = err instanceof Error ? err.message : String(err);
-        console.warn(`[SearchService] Tavily failed (${lastError}), trying Google Search grounding.`);
       }
     }
 
-    // 3. Tier 2: Google Search Grounding (Real-time live Google Search index)
-    if (results.length === 0 && this.geminiApiKey) {
-      try {
-        results = await searchGoogleGrounding(sanitized.sanitized, this.geminiApiKey, options);
-        provider = "google" as any;
-      } catch (googleErr: unknown) {
-        const gMsg = googleErr instanceof Error ? googleErr.message : String(googleErr);
-        lastError = lastError ? `${lastError} | Google: ${gMsg}` : gMsg;
-        console.warn(`[SearchService] Google Search grounding failed (${gMsg}), falling back to DuckDuckGo.`);
-      }
-    }
-
-    // 4. Tier 3: DuckDuckGo Fallback
+    // 3. Tier 2: DuckDuckGo (Fast, direct, developer-accurate)
     if (results.length === 0) {
       try {
         results = await searchDuckDuckGo(sanitized.sanitized, options);
-        provider = "duckduckgo";
+        if (results.length > 0) {
+          provider = "duckduckgo";
+        }
       } catch (ddgErr: unknown) {
         const ddgErrorMsg = ddgErr instanceof Error ? ddgErr.message : String(ddgErr);
         lastError = lastError ? `${lastError} | DuckDuckGo: ${ddgErrorMsg}` : ddgErrorMsg;
-        provider = "fallback";
+      }
+    }
+
+    // 4. Tier 3: Bing Search (Robust, unmetered fallback)
+    if (results.length === 0) {
+      try {
+        results = await searchBing(sanitized.sanitized, options);
+        if (results.length > 0) {
+          provider = "bing";
+        }
+      } catch (bingErr: unknown) {
+        const bingMsg = bingErr instanceof Error ? bingErr.message : String(bingErr);
+        lastError = lastError ? `${lastError} | Bing: ${bingMsg}` : bingMsg;
+      }
+    }
+
+    // 5. Tier 4: Google Search Grounding fallback
+    if (results.length === 0 && this.geminiApiKey) {
+      try {
+        results = await searchGoogleGrounding(sanitized.sanitized, this.geminiApiKey, options);
+        if (results.length > 0) {
+          provider = "google";
+        }
+      } catch (googleErr: unknown) {
+        const gMsg = googleErr instanceof Error ? googleErr.message : String(googleErr);
+        lastError = lastError ? `${lastError} | Google: ${gMsg}` : gMsg;
       }
     }
 
     const response: SearchResponse = {
       query: sanitized.sanitized,
-      provider: provider as any,
+      provider,
       results,
       error: results.length === 0 && lastError ? lastError : undefined,
     };

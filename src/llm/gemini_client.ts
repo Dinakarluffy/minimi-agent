@@ -1,4 +1,4 @@
-import type { ContentItem, LLMClientInterface, LLMResponse, FunctionCallItem } from "./types.js";
+import type { ContentItem, LLMClientInterface, LLMResponse, FunctionCallItem, LLMGenerateOptions } from "./types.js";
 
 export const WEB_SEARCH_TOOL_DECLARATION = {
   functionDeclarations: [
@@ -34,7 +34,11 @@ export class GeminiClient implements LLMClientInterface {
     this.apiKey = key.trim();
   }
 
-  public async generate(contents: ContentItem[], systemInstruction?: string): Promise<LLMResponse> {
+  public async generate(
+    contents: ContentItem[],
+    systemInstruction?: string,
+    options?: LLMGenerateOptions
+  ): Promise<LLMResponse> {
     if (!this.apiKey) {
       throw new Error(
         "GEMINI_API_KEY is not configured. Please add your GEMINI_API_KEY in .env or set it in your environment."
@@ -47,11 +51,14 @@ export class GeminiClient implements LLMClientInterface {
 
     const requestBody: Record<string, any> = {
       contents,
-      tools: [WEB_SEARCH_TOOL_DECLARATION],
       generationConfig: {
         temperature: 0.2,
       },
     };
+
+    if (!options?.disableTools) {
+      requestBody.tools = [WEB_SEARCH_TOOL_DECLARATION];
+    }
 
     if (systemInstruction) {
       requestBody.systemInstruction = {
@@ -105,6 +112,8 @@ export class GeminiClient implements LLMClientInterface {
             functionCalls.push({
               name: part.functionCall.name,
               args: part.functionCall.args || {},
+              id: part.functionCall.id,
+              thoughtSignature: part.thoughtSignature,
             });
           }
         }
@@ -112,6 +121,7 @@ export class GeminiClient implements LLMClientInterface {
         return {
           text,
           functionCalls: functionCalls.length > 0 ? functionCalls : undefined,
+          modelParts: parts,
           usage: {
             promptTokens: data.usageMetadata?.promptTokenCount,
             completionTokens: data.usageMetadata?.candidatesTokenCount,
